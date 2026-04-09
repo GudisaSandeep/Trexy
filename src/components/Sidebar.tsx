@@ -3,7 +3,7 @@
 import { Logo } from '@/components/Logo'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Compass, Newspaper, Mail, User, Settings, LogOut, Plus } from 'lucide-react'
+import { Home, Search, Bell, Mail, User, Bookmark, CircleEllipsis, Feather } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 
 export function Sidebar() {
@@ -11,14 +11,13 @@ export function Sidebar() {
   const router = useRouter()
   const supabase = createClient()
 
-  // Notice we use the exact styling logic observed: Active colors are Pink/Magenta
   const tabs = [
-    { name: 'Feed', href: '/', icon: Home },
-    { name: 'Explore', href: '/explore', icon: Compass },
-    { name: 'News', href: '/news', icon: Newspaper },
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'Explore', href: '/explore', icon: Search },
+    { name: 'Notifications', href: '/notifications', icon: Bell },
     { name: 'Messages', href: '/messages', icon: Mail },
+    { name: 'Bookmarks', href: '/bookmarks', icon: Bookmark },
     { name: 'Profile', href: '/profile', icon: User },
-    { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   const handleLogout = async () => {
@@ -27,14 +26,16 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="fixed top-0 left-0 w-[80px] xl:w-[280px] h-screen border-r border-[#1c1b22] bg-[#0b0a10]/95 backdrop-blur-xl z-50 flex flex-col justify-between py-6 px-4">
-      <div className="flex flex-col gap-6 h-full">
-        <div className="flex xl:justify-start justify-center px-0 xl:px-4">
-          <Logo width={45} className="xl:hidden pb-4" />
-          <Logo width={85} className="hidden xl:flex pb-6 border-b border-[#1c1b22] w-full" />
+    // Replaced 'fixed left-0' with 'sticky top-0' 
+    // This allows the sidebar to perfectly nest inside the centered parent layout box on wide monitors
+    <aside className="sticky top-0 h-screen w-full bg-black z-50 flex flex-col justify-between py-4 px-2 xl:px-4 overflow-y-auto overflow-x-hidden hidden-scrollbar">
+      <div className="flex flex-col xl:items-start items-center gap-1 h-full w-full">
+        {/* Logo matching top left X positioning */}
+        <div className="flex items-center justify-center w-[52px] h-[52px] hover:bg-neutral-900 rounded-full transition-colors mb-2 cursor-pointer">
+          <Logo width={35} />
         </div>
 
-        <nav className="flex flex-col gap-[6px] mt-2 overflow-y-auto hidden-scrollbar">
+        <nav className="flex flex-col w-full xl:w-auto">
           {tabs.map((tab) => {
             const Icon = tab.icon
             const isActive = pathname === tab.href || (tab.href !== '/' && pathname.startsWith(tab.href))
@@ -43,32 +44,53 @@ export function Sidebar() {
               <Link 
                 key={tab.name} 
                 href={tab.href}
-                className={`flex items-center gap-5 p-[14px] rounded-[1.2rem] transition-all group ${
-                  isActive 
-                  ? 'font-black text-[#FF0080]' 
-                  : 'text-white/60 hover:bg-white/5 hover:text-white font-bold'
-                }`}
+                className="flex items-center group w-full xl:w-fit py-1"
               >
-                <Icon size={26} strokeWidth={isActive ? 2.5 : 2} className="shrink-0 transition-transform group-active:scale-95" />
-                <span className="text-[17px] hidden xl:inline-block tracking-wide">{tab.name}</span>
+                <div className={`flex items-center xl:gap-5 p-3 px-3 xl:pr-6 xl:pl-3 rounded-full transition-colors xl:w-auto w-fit mx-auto ${
+                  isActive ? 'font-bold text-white' : 'text-neutral-200 hover:bg-neutral-900'
+                }`}>
+                   <div className="relative">
+                     {tab.name === 'Notifications' && <div className="absolute -top-1 -right-1 w-4 h-4 bg-sky-500 rounded-full text-[10px] flex items-center justify-center font-bold text-white border border-black z-10">3</div>}
+                     <Icon size={26} strokeWidth={isActive ? 3 : 2} className="shrink-0" />
+                   </div>
+                   <span className="text-xl hidden xl:inline-block pt-1">{tab.name}</span>
+                </div>
               </Link>
             )
           })}
-
-          <button className="flex items-center gap-5 p-[14px] rounded-[1.2rem] transition-all group text-white/60 hover:bg-white/5 hover:text-red-500 font-bold mt-2" onClick={handleLogout}>
-            <LogOut size={26} strokeWidth={2} className="shrink-0 transition-transform group-active:scale-95" />
-            <span className="text-[17px] hidden xl:inline-block tracking-wide">Logout</span>
+          
+          <button className="flex items-center group w-full xl:w-fit py-1">
+            <div className="flex items-center xl:gap-5 p-3 px-3 xl:pr-6 xl:pl-3 rounded-full transition-colors text-neutral-200 hover:bg-neutral-900 xl:w-auto w-fit mx-auto">
+              <CircleEllipsis size={26} strokeWidth={2} className="shrink-0" />
+              <span className="text-xl hidden xl:inline-block pt-1">More</span>
+            </div>
           </button>
         </nav>
 
-        <div className="flex items-center justify-center mt-auto mb-2">
-          {/* Post button mirroring the beautiful floating '+' circle from the mobile tab bar */}
-          <button className="w-full xl:w-auto xl:px-12 bg-transparent text-[#FF0080] rounded-full flex items-center justify-center p-3 xl:py-4 transition-all hover:opacity-90 active:scale-[0.98] shadow-[0_0_20px_rgba(255,0,128,0.2)] border-2 border-t-[#FF0080] border-r-[#FF0080] border-b-[#00FFFF] border-l-[#00FFFF]">
-            <Plus size={30} className="xl:hidden block" strokeWidth={3} />
-            <span className="font-black text-[18px] hidden xl:block tracking-wide flex items-center gap-4">
-              <Plus size={24} strokeWidth={3} /> Post
-            </span>
+        {/* X-style prominent post button */}
+        <div className="w-full mt-4 flex justify-center xl:justify-start px-1 xl:px-0">
+          <button className="bg-[#FF0080] hover:bg-[#FF0080]/90 text-white rounded-full w-[52px] h-[52px] xl:w-[90%] xl:h-[52px] flex items-center justify-center shadow-md transition-colors">
+            <Feather size={24} className="xl:hidden block" strokeWidth={2.5} />
+            <span className="font-bold text-lg hidden xl:block">Post</span>
           </button>
+        </div>
+      </div>
+
+      {/* Mini Profile at bottom */}
+      <div className="w-full mt-auto mb-2 px-1 xl:px-0 cursor-pointer pt-4">
+        <div className="flex items-center justify-center xl:justify-between hover:bg-neutral-900 rounded-full p-2 xl:p-3 transition-colors" onClick={handleLogout}>
+          <div className="w-10 h-10 rounded-full shrink-0 bg-gradient-to-tr from-[#FF512F] to-[#DD2476] p-[2px]">
+             <div className="w-full h-full bg-neutral-800 rounded-full flex items-center justify-center p-1">
+                <img src="/Logo.png" alt="Avatar" className="w-full h-full object-contain filter invert" />
+             </div>
+          </div>
+          <div className="hidden xl:flex flex-col ml-3 mr-auto h-full justify-center overflow-hidden">
+             <span className="text-white text-[15px] font-bold leading-none truncate">Trexy</span>
+             <span className="text-neutral-500 text-[15px] leading-none pt-1 truncate">@trexy_root</span>
+          </div>
+          <div className="hidden xl:block text-white ml-2 shrink-0">
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </div>
         </div>
       </div>
     </aside>
